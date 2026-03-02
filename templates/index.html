@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Slack-чат</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+
+<body>
+    <h1>Slack-чат</h1>
+    <p>База данных: {% if db_ok %}<strong>OK</strong>{% else %}Ошибка{% endif %}</p>
+    {% if current_user() %}
+    <p>Вы вошли как {{ current_user().username }}.
+        <a href="{{ url_for('/') }}">Дашборд каналов</a> ·
+        <a href="{{ url_for('logout') }}">Выйти</a>
+    </p>
+    {% else %}
+    <p><a href="{{ url_for('login') }}">Войти</a></p>
+    {% endif %}
+</body>
+
+</html>
