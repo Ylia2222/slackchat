@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Вход · Учебное веб‑приложение{% endblock %}
+{% block title %}Регистрация · Учебное веб‑приложение{% endblock %}
 
 {% block content %}
 <div class="card">
-    <h2>Вход</h2>
+    <h1>Регистрация</h1>
 
+    {% if registration_disabled %}
+    <p>Регистрация временно закрыта. Попробуйте позже или обратитесь к администратору.</p>
+    <p><a href="{{ url_for('home') }}">На главную</a></p>
+    {% else %}
     {% if error %}
     <p style="color: darkred;">{{ error }}</p>
     {% endif %}
 
-    <form method="post" action="{{ url_for('login') }}">
-        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}" />
-
+    <form method="post" action="{{ url_for('register') }}">
         <div>
             <label for="username">Логин</label><br />
             <input id="username" name="username" required />
@@ -24,14 +26,13 @@
         </div>
 
         <div style="margin-top: 12px;">
-            <button type="submit">Войти</button>
+            <button type="submit">Создать аккаунт</button>
         </div>
     </form>
 
-    {% if registration_open %}
     <p style="margin-top: 12px;">
-        Нет аккаунта?
-        <a href="{{ url_for('register') }}">Зарегистрируйтесь</a>.
+        Уже есть аккаунт?
+        <a href="{{ url_for('login_form') }}">Войти</a>
     </p>
     {% endif %}
 </div>

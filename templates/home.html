@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Главная · Учебное веб‑приложение{% endblock %}
+
+{% block content %}
+<div class="card">
+    <p>База данных:
+        {% if db_ok %}
+        <strong>OK</strong>
+        {% else %}
+        Ошибка
+        {% endif %}
+    </p>
+
+    {% if current_user() %}
+    <p>
+        Добро пожаловать, {{ current_user().username }}.
+        Перейдите в <a href="{{ url_for('dashboard') }}">дашборд</a>.
+    </p>
+    {% else %}
+    <p>Вы гость. Вы можете
+        <a href="{{ url_for('login_form') }}">войти</a>
+        {% if registration_open %}
+        или <a href="{{ url_for('register') }}">зарегистрироваться</a>.
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд · Учебное веб‑приложение{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Дашборд</h2>
+    <p>Вы вошли как {{ user.username }} (роль: {{ user.role }}).</p>
+    <p>Здесь находится основная функциональность приложения.</p>
+</div>
+{% endblock %}

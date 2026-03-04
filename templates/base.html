@@ -1,0 +1,42 @@
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}Учебное веб‑приложение{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+
+<body>
+    <header>
+        <h1><a href="{{ url_for('home') }}">Учебное веб‑приложение</a></h1>
+        <nav>
+            <a href="{{ url_for('home') }}">Главная</a>
+
+            {% if current_user() %}
+            <a href="{{ url_for('dashboard') }}">Дашборд</a>
+
+            {% if is_master() %}
+            <a href="{{ url_for('admin_settings') }}">Настройки</a>
+            
+            {% endif %}
+
+            <span style="float: right;">
+                {{ current_user().username }}
+                (<a href="{{ url_for('logout') }}">выйти</a>)
+            </span>
+            {% else %}
+            <a href="{{ url_for('login_form') }}">Вход</a>
+            {% if registration_open %}
+            <a href="{{ url_for('register') }}">Регистрация</a>
+            {% endif %}
+            {% endif %}
+        </nav>
+        <hr />
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>

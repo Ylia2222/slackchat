@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки · Учебное веб‑приложение{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h1>Настройки</h1>
+
+        <form method="post" action="{{ url_for('admin_settings_save') }}">
+            <label>
+                <input type="checkbox" name="registration_open" {% if registration_open %}checked{% endif %} />
+                Разрешить регистрацию новых пользователей
+            </label>
+
+            <div style="margin-top: 12px;">
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+
+        <p style="margin-top: 16px;">
+            <a href="{{ url_for('dashboard') }}">Вернуться в дашборд</a>
+        </p>
+    </div>
+    {% endblock %}
