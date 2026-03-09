@@ -15,9 +15,9 @@
             {% if current_user() %}
             <a href="{{ url_for('dashboard') }}">Дашборд</a>
 
-            {% if is_master() %}
+            {% if is_admin() %}
             <a href="{{ url_for('admin_settings') }}">Настройки</a>
-            
+            <a href="{{ url_for('admin_users') }}">Пользователи</a>
             {% endif %}
 
             <span style="float: right;">
@@ -33,6 +33,18 @@
         </nav>
         <hr />
     </header>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <section class="flash-container">
+        {% for message in messages %}
+        <div class="flash-message">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+    {% endwith %}
 
     <main>
         {% block content %}{% endblock %}

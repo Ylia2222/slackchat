@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи · Админ{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Пользователи</h1>
+
+    <h2>Создать пользователя</h2>
+    <form method="post" action="{{ url_for('admin_user_create') }}" class="form form-row">
+        <div class="form-group">
+            <label for="new_username">Логин</label>
+            <input type="text" id="new_username" name="username" required minlength="2" placeholder="username" />
+        </div>
+        <div class="form-group">
+            <label for="new_password">Пароль</label>
+            <input type="password" id="new_password" name="password" required placeholder="••••••" />
+        </div>
+        <div class="form-group" style="align-self: flex-end;">
+            <button type="submit" class="btn btn-primary">Создать</button>
+        </div>
+    </form>
+
+    <p class="muted">
+        Архивировать — пользователь не может войти, но его запись остаётся в таблице.
+        Восстановить — снять архив, снова разрешить вход.
+        Удалить навсегда — полностью удалить пользователя из таблицы (без возможности восстановления).
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Логин</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th>Создан</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.role }}</td>
+                <td>
+                    {% if u.archived_at %}
+                    <span class="badge badge-deleted">В архиве</span>
+                    {% else %}
+                    Активен
+                    {% endif %}
+                </td>
+                <td>{{ u.created_at[:10] if u.created_at else '' }}</td>
+                <td class="actions-cell">
+                    {% if u.archived_at %}
+                    <form method="post" action="{{ url_for('admin_user_restore', user_id=u.id) }}" class="inline-form">
+                        <button type="submit" class="btn btn-sm">Восстановить</button>
+                    </form>
+                    {% elif u.role != 'admin'  %}
+                    <form method="post" action="{{ url_for('admin_user_archive', user_id=u.id) }}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Заархивировать пользователя? Он не сможет войти.')">
+                            Архивировать
+                        </button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin_user_delete', user_id=u.id) }}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить пользователя безвозвратно? Это действие нельзя отменить.')">
+                            Удалить навсегда
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
