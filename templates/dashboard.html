@@ -1,11 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Дашборд · Учебное веб‑приложение{% endblock %}
+{% block title %}Дашборд · Slack‑чат{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2>Дашборд</h2>
-    <p>Вы вошли как {{ user.username }} (роль: {{ user.role }}).</p>
-    <p>Здесь находится основная функциональность приложения.</p>
-</div>
+<section class="card">
+    <h1>Дашборд</h1>
+    <p>Вы вошли как <strong>{{ user.username }}</strong> (роль: {{ user.role }}).</p>
+
+    <p>
+        <a href="{{ url_for('channel_new') }}" class="btn btn-primary">Создать канал</a>
+    </p>
+
+    <h2>Мои каналы</h2>
+    {% if not my_channels %}
+    <p class="muted">Вы ещё не состоите ни в одном канале. Создайте канал или вступите в публичный.</p>
+    {% else %}
+    <ul>
+        {% for ch in my_channels %}
+        <li>
+            <a href="{{ url_for('channel_view', channel_id=ch.id) }}">#{{ ch.name }}</a>
+            <span class="muted">({{ ch.my_role }})</span>
+            {% if ch.type == 'read_only' %}<span class="badge">read‑only</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h2>Доступные публичные каналы</h2>
+    {% if not public_joinable %}
+    <p class="muted">Нет публичных каналов для вступления.</p>
+    {% else %}
+    <ul>
+        {% for ch in public_joinable %}
+        <li>
+            #{{ ch.name }}
+            <form method="post" action="{{ url_for('channel_join', channel_id=ch.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-small">Вступить</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</section>
 {% endblock %}

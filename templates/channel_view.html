@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Канал #{{ channel.name }} · Slack‑чат{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>#{{ channel.name }}</h1>
+
+    <p class="muted">
+        Тип: {{ channel.type }}<br />
+        Владелец:
+        {% if channel.owner_name %}
+        {{ channel.owner_name }}
+        {% else %}
+        (не указан)
+        {% endif %}
+        <br />
+        Создан: {{ channel.created_at }}
+    </p>
+
+    {% if my_role %}
+    <p>Ваша роль в канале: <strong>{{ my_role }}</strong>.</p>
+    <form method="post" action="{{ url_for('channel_leave', channel_id=channel.id) }}" style="display: inline;">
+        <button type="submit" class="btn">Покинуть канал</button>
+    </form>
+    {% else %}
+    {% if channel.type == 'public' %}
+    <form method="post" action="{{ url_for('channel_join', channel_id=channel.id) }}" style="display: inline;">
+        <button type="submit" class="btn btn-primary">Вступить в канал</button>
+    </form>
+    {% endif %}
+    {% endif %}
+
+    {% if can_manage_members %}
+    <h2>Участники</h2>
+    <form method="post" action="{{ url_for('channel_invite', channel_id=channel.id) }}" class="form" style="margin-bottom: 16px;">
+        <label for="user_id">Пригласить пользователя</label>
+        <select id="user_id" name="user_id" required>
+            <option value="">— выберите —</option>
+            {% for u in invite_candidates %}
+            <option value="{{ u.id }}">{{ u.username }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Пригласить</button>
+    </form>
+    {% if not invite_candidates %}
+    <p class="muted">Нет пользователей для приглашения (все активные уже в канале).</p>
+    {% endif %}
+    <table>
+        <thead>
+            <tr>
+                <th>Пользователь</th>
+                <th>Роль</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in members %}
+            <tr>
+                <td>{{ m.username }}</td>
+                <td>{{ m.role }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('channel_remove_member', channel_id=channel.id, user_id=m.user_id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-small">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <h2>Сообщения</h2>
+
+    {% if can_post %}
+    <form method="post" action="{{ url_for('thread_create', channel_id=channel.id) }}" class="form" style="margin-bottom: 16px;">
+        <label for="content">Новый тред</label>
+        <input type="text" id="content" name="content" placeholder="Тема или первое сообщение" required />
+        <button type="submit" class="btn btn-primary">Создать тред</button>
+    </form>
+    {% else %}
+    {% if my_role == 'read_only' %}
+    <p class="muted">В этом канале вы можете только просматривать сообщения.</p>
+    {% endif %}
+    {% endif %}
+
+    <h3>Треды</h3>
+    {% if not thread_starters %}
+    <p class="muted">Пока нет тредов.</p>
+    {% else %}
+    <ul>
+        {% for t in thread_starters %}
+        <li>
+            <a href="{{ url_for('channel_view', channel_id=channel.id, thread=t.id) }}">{{ t.content[:50] if not t.deleted_at else '[Удалено]' }}{% if t.content|length > 50 and not t.deleted_at %}…{% endif %}</a>
+            <span class="muted"> — {{ t.author_name or '(автор удалён)' }}, {{ t.created_at }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if selected_thread %}
+    <section class="card" style="margin-top: 16px;">
+        <h3>Тред</h3>
+        <p>
+            {% if selected_thread.deleted_at %}<span class="muted">[Удалено]</span>{% else %}{{ selected_thread.content }}{% endif %}
+            <span class="muted"> — {{ selected_thread.author_name or '(автор удалён)' }}, {{ selected_thread.created_at }}</span>
+            {% if can_delete_thread %}
+        <form method="post" action="{{ url_for('message_delete', channel_id=channel.id, message_id=selected_thread.id) }}" style="display: inline;" onsubmit="return confirm('Удалить этот тред?');">
+            <button type="submit" class="btn btn-small">Удалить тред</button>
+        </form>
+        {% endif %}
+        </p>
+        <h4>Ответы</h4>
+        {% if not thread_replies %}
+        <p class="muted">Нет ответов. (Добавление ответов — в следующей части.)</p>
+        {% else %}
+        <ul>
+            {% for r in thread_replies %}
+            <li>
+                {% if r.deleted_at %}<span class="muted">[Удалено]</span>{% else %}{{ r.content }}{% endif %}
+                <span class="muted"> — {{ r.author_name or '(автор удалён)' }}, {{ r.created_at }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </section>
+    {% endif %}
+    <p style="margin-top: 16px;">
+        <a href="{{ url_for('dashboard') }}">К дашборду</a>
+    </p>
+</section>
+{% endblock %}

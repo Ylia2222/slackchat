@@ -13,7 +13,17 @@ from views_auth import (
     logout_view,
     register_form_view,
     register_view,
+)
+
+from views_channels import (
     dashboard_view,
+    channel_new_view,
+    channel_create_view,
+    channel_view_view,
+    channel_join_view,
+    channel_leave_view,
+    channel_invite_view,
+    channel_remove_member_view,
 )
 
 from views_admin import (
@@ -25,6 +35,7 @@ from views_admin import (
     admin_user_restore_view,
     admin_user_delete_view,
 )
+
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -55,6 +66,7 @@ def home():
     user = current_user()
     
     return render_template("home.html", db_ok=db_ok)
+
 @app.get("/login")
 def login_form():
     return login_form_view()
@@ -70,6 +82,40 @@ def logout():
 @app.get("/dashboard")
 def dashboard():
     return  dashboard_view()
+
+@app.get("/channels/new")
+def channel_new():
+    return channel_new_view()
+
+
+@app.post("/channels/new")
+def channel_create():
+    return channel_create_view()
+
+
+@app.get("/channels/<int:channel_id>")
+def channel_view(channel_id):
+    return channel_view_view(channel_id)
+
+@app.post("/channels/<int:channel_id>/join")
+def channel_join(channel_id):
+    return channel_join_view(channel_id)
+
+@app.post("/channels/<int:channel_id>/leave")
+def channel_leave(channel_id):
+    return channel_leave_view(channel_id)
+
+@app.post("/channels/<int:channel_id>/invite")
+def channel_invite(channel_id):
+    return channel_invite_view(channel_id)
+
+@app.post("/channels/<int:channel_id>/members/<int:user_id>/remove")
+def channel_remove_member(channel_id, user_id):
+    return channel_remove_member_view(channel_id, user_id)
+
+@app.post("/channels/<int:channel_id>/messages/<int:message_id>/delete")
+def message_delete(channel_id, message_id):
+    return message_delete_view(channel_id, message_id)
 
 @app.get("/admin/settings")
 def admin_settings():

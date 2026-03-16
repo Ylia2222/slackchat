@@ -11,6 +11,8 @@ from flask import Flask, render_template, session, abort, request, url_for, redi
 
 from db import get_conn, init_db, insert_test_user, show_table
 
+from datetime import datetime
+
 def admin_settings_view():
     if not is_logged_in():
         return redirect(url_for("login_form", next=request.url))

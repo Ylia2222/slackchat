@@ -8,18 +8,16 @@
 
 <body>
     <header>
-        <h1><a href="{{ url_for('home') }}">Учебное веб‑приложение</a></h1>
+        <h1><a href="{{ url_for('home') }}">Slack‑чат (учебный)</a></h1>
         <nav>
             <a href="{{ url_for('home') }}">Главная</a>
 
             {% if current_user() %}
-            <a href="{{ url_for('dashboard') }}">Дашборд</a>
-
+            <a href="{{ url_for('dashboard') }}">Каналы</a>
             {% if is_admin() %}
             <a href="{{ url_for('admin_settings') }}">Настройки</a>
             <a href="{{ url_for('admin_users') }}">Пользователи</a>
             {% endif %}
-
             <span style="float: right;">
                 {{ current_user().username }}
                 (<a href="{{ url_for('logout') }}">выйти</a>)
@@ -27,7 +25,7 @@
             {% else %}
             <a href="{{ url_for('login_form') }}">Вход</a>
             {% if registration_open %}
-            <a href="{{ url_for('register') }}">Регистрация</a>
+            <a href="{{ url_for('register_form') }}">Регистрация</a>
             {% endif %}
             {% endif %}
         </nav>

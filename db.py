@@ -32,6 +32,43 @@ def init_db():
     )
 """)
     
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS channels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            type TEXT NOT NULL CHECK (type IN ('public', 'private', 'read_only')),
+            owner_id INTEGER,
+            created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+            FOREIGN KEY (owner_id) REFERENCES users(id)
+        )
+    """)
+    
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS channel_members (
+            channel_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('owner', 'member', 'read_only')),
+            PRIMARY KEY (channel_id, user_id),
+            FOREIGN KEY (channel_id) REFERENCES channels(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+    
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id INTEGER NOT NULL,
+            author_id INTEGER,
+            parent_id INTEGER,
+            content TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+            deleted_at TEXT,
+            FOREIGN KEY (channel_id) REFERENCES channels(id),
+            FOREIGN KEY (author_id) REFERENCES users(id),
+            FOREIGN KEY (parent_id) REFERENCES messages(id)
+        )
+    """)
+    
     conn.commit()
     conn.close()
     

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Новый канал · Slack‑чат{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1>Новый канал</h1>
+
+    {% if error %}
+      <p class="bad">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('channel_create') }}" class="form">
+      <div class="form-group">
+        <label for="name">Имя канала</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          placeholder="например, general"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="type">Тип канала</label>
+        <select id="type" name="type">
+          <option value="public">Публичный</option>
+          <option value="private">Приватный</option>
+          <option value="read_only">Только чтение</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Создать канал</button>
+    </form>
+
+    <p style="margin-top: 16px;">
+      <a href="{{ url_for('dashboard') }}">К дашборду</a>
+    </p>
+  </section>
+{% endblock %}
