@@ -144,10 +144,7 @@ def channel_view_view(channel_id: int):
     selected_thread = None
     thread_replies = []
     can_delete_thread = False
-    if selected_thread:
-        is_author = (selected_thread["author_id"] == user["id"])
-        is_channel_owner = (ch["owner_id"] == user["id"])
-        can_delete_thread = is_author or is_channel_owner or is_admin()
+
     thread_id_param = request.args.get("thread")
     if thread_id_param:
         try:
@@ -161,6 +158,11 @@ def channel_view_view(channel_id: int):
             """, (tid, channel_id)).fetchone()
             if row:
                 selected_thread = row
+                # Вычисляем can_delete_thread ТУТ, после загрузки selected_thread!
+                is_author = (selected_thread["author_id"] == user["id"])
+                is_channel_owner = (ch["owner_id"] == user["id"])
+                can_delete_thread = is_author or is_channel_owner or is_admin()
+
                 thread_replies = conn.execute("""
                     SELECT m.id, m.content, m.author_id, m.created_at, m.deleted_at,
                            u.username AS author_name
@@ -171,7 +173,7 @@ def channel_view_view(channel_id: int):
                 """, (tid,)).fetchall()
         except (TypeError, ValueError):
             pass
-    
+
     can_post = my_role in ("member", "owner") or is_admin()
     
       # Список участников канала (id, username, role) — для блока «Участники»
@@ -209,6 +211,10 @@ def channel_view_view(channel_id: int):
         members=members,
         can_manage_members=can_manage_members,
         invite_candidates=invite_candidates,
+        can_post=can_post,
+        thread_starters=thread_starters,
+        can_delete_thread=can_delete_thread,
+        selected_thread=selected_thread
     )
 def channel_join_view(channel_id: int):
     if not is_logged_in():
@@ -539,3 +545,107 @@ def message_delete_view(channel_id: int, message_id: int):
 
     flash("Сообщение удалено.")
     return redirect(url_for("channel_view", channel_id=channel_id))
+
+def message_delete_view(channel_id: int, message_id: int):
+    if not is_logged_in():
+        return redirect(url_for("login_form", next=request.url))
+
+    user = current_user()
+    conn = get_conn()
+
+    ch = conn.execute(
+        "SELECT id, owner_id FROM channels WHERE id = ?",
+        (channel_id,),
+    ).fetchone()
+
+    if ch is None:
+        conn.close()
+        abort(404)
+
+    msg = conn.execute(
+        "SELECT id, author_id, parent_id FROM messages WHERE id = ? AND channel_id = ?",
+        (message_id, channel_id),
+    ).fetchone()
+
+    if msg is None:
+        conn.close()
+        abort(404)
+
+    # Удалять могут автор, владелец канала или админ
+    if msg["author_id"] != user["id"] and ch["owner_id"] != user["id"] and not is_admin():
+        conn.close()
+        abort(403)
+
+    conn.execute(
+        "UPDATE messages SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), content = '' WHERE id = ?",
+        (message_id,),
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Сообщение удалено.")
+    return redirect(url_for("channel_view", channel_id=channel_id))
+
+def reply_create_view(channel_id: int, parent_id: int):
+    if not is_logged_in():
+        return redirect(url_for("login_form", next=request.url))
+
+    user = current_user()
+    conn = get_conn()
+
+    ch = conn.execute(
+        "SELECT id, name, type, owner_id FROM channels WHERE id = ?",
+        (channel_id,),
+    ).fetchone()
+
+    if ch is None:
+        conn.close()
+        abort(404)
+
+    # Доступ к каналу: приватный — только участник или админ
+    if ch["type"] == "private" and not is_admin():
+        member = conn.execute(
+            "SELECT 1 FROM channel_members WHERE channel_id = ? AND user_id = ?",
+            (channel_id, user["id"]),
+        ).fetchone()
+        if not member:
+            conn.close()
+            abort(403)
+
+    # Писать могут member, owner или админ
+    membership = conn.execute(
+        "SELECT role FROM channel_members WHERE channel_id = ? AND user_id = ?",
+        (channel_id, user["id"]),
+    ).fetchone()
+    if not membership and not is_admin():
+        conn.close()
+        flash("Вы не состоите в канале.")
+        return redirect(url_for("channel_view", channel_id=channel_id, thread=parent_id))
+    if membership and membership["role"] == "read_only" and not is_admin():
+        conn.close()
+        abort(403)
+
+    # Родительское сообщение должно быть корневым в этом канале
+    parent = conn.execute(
+        "SELECT id FROM messages WHERE id = ? AND channel_id = ? AND parent_id IS NULL",
+        (parent_id, channel_id),
+    ).fetchone()
+    if not parent:
+        conn.close()
+        abort(404)
+
+    content = (request.form.get("content") or "").strip()
+    if not content:
+        conn.close()
+        flash("Введите текст ответа.")
+        return redirect(url_for("channel_view", channel_id=channel_id, thread=parent_id))
+
+    conn.execute(
+        "INSERT INTO messages (channel_id, author_id, parent_id, content) VALUES (?, ?, ?, ?)",
+        (channel_id, user["id"], parent_id, content),
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Ответ добавлен.")
+    return redirect(url_for("channel_view", channel_id=channel_id, thread=parent_id))

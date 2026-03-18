@@ -24,6 +24,9 @@ from views_channels import (
     channel_leave_view,
     channel_invite_view,
     channel_remove_member_view,
+    thread_create_view,
+    message_delete_view,
+    reply_create_view,
 )
 
 from views_admin import (
@@ -35,7 +38,6 @@ from views_admin import (
     admin_user_restore_view,
     admin_user_delete_view,
 )
-
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -113,9 +115,17 @@ def channel_invite(channel_id):
 def channel_remove_member(channel_id, user_id):
     return channel_remove_member_view(channel_id, user_id)
 
+@app.post("/channels/<int:channel_id>/threads")
+def thread_create(channel_id):
+    return thread_create_view(channel_id)
+
 @app.post("/channels/<int:channel_id>/messages/<int:message_id>/delete")
 def message_delete(channel_id, message_id):
     return message_delete_view(channel_id, message_id)
+
+@app.post("/channels/<int:channel_id>/threads/<int:parent_id>/reply")
+def reply_create(channel_id, parent_id):
+    return reply_create_view(channel_id, parent_id)
 
 @app.get("/admin/settings")
 def admin_settings():

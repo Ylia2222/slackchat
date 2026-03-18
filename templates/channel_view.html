@@ -86,6 +86,7 @@
     <h3>Треды</h3>
     {% if not thread_starters %}
     <p class="muted">Пока нет тредов.</p>
+    {{thread_starters}}
     {% else %}
     <ul>
         {% for t in thread_starters %}
@@ -96,6 +97,10 @@
         {% endfor %}
     </ul>
     {% endif %}
+
+    <p>DEBUG: can_delete_thread={{ can_delete_thread }}</p>
+    <p>DEBUG: author_id={{ selected_thread }}, user_id={{ current_user().id }}</p>
+    <p>DEBUG: owner_id={{ channel.owner_id }}</p>
 
     {% if selected_thread %}
     <section class="card" style="margin-top: 16px;">
@@ -111,16 +116,35 @@
         </p>
         <h4>Ответы</h4>
         {% if not thread_replies %}
-        <p class="muted">Нет ответов. (Добавление ответов — в следующей части.)</p>
+        <p class="muted">Нет ответов.</p>
         {% else %}
         <ul>
             {% for r in thread_replies %}
             <li>
-                {% if r.deleted_at %}<span class="muted">[Удалено]</span>{% else %}{{ r.content }}{% endif %}
+                {% if r.deleted_at %}
+                <span class="muted">[Удалено]</span>
+                {% else %}
+                {{ r.content }}
+                {% endif %}
                 <span class="muted"> — {{ r.author_name or '(автор удалён)' }}, {{ r.created_at }}</span>
+
+                <!-- КНОПКА УДАЛЕНИЯ — добавить эту форму -->
+                {% if not r.deleted_at and (r.author_id == current_user().id or channel.owner_id == current_user().id or is_admin()) %}
+                <form method="post" action="{{ url_for('message_delete_view', channel_id=channel.id, message_id=r.id) }}" style="display: inline;" onsubmit="return confirm('Удалить этот ответ?');">
+                    <button type="submit" class="btn btn-small">Удалить</button>
+                </form>
+                {% endif %}
             </li>
             {% endfor %}
         </ul>
+        {% endif %}
+
+        {% if can_post %}
+        <form method="post" action="{{ url_for('reply_create', channel_id=channel.id, parent_id=selected_thread.id) }}" class="form" style="margin-top: 12px;">
+            <label for="reply_content">Ответить</label>
+            <input type="text" id="reply_content" name="content" placeholder="Текст ответа" required />
+            <button type="submit" class="btn btn-primary">Ответить</button>
+        </form>
         {% endif %}
     </section>
     {% endif %}
