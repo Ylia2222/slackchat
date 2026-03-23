@@ -214,7 +214,8 @@ def channel_view_view(channel_id: int):
         can_post=can_post,
         thread_starters=thread_starters,
         can_delete_thread=can_delete_thread,
-        selected_thread=selected_thread
+        selected_thread=selected_thread, 
+        thread_replies=thread_replies
     )
 def channel_join_view(channel_id: int):
     if not is_logged_in():
