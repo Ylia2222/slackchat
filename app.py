@@ -49,6 +49,11 @@ from datetime import datetime
 
 from db import get_conn, init_db, insert_test_user, show_table
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = "dev-secret"
 
@@ -174,8 +179,11 @@ def admin_user_delete(user_id):
 
 if __name__ == "__main__":
     init_db()
-    insert_test_user()
     print(show_table())
     ensure_master()
-    create_user("test1","123","user")
+
+    if os.getenv("DEV_SEED_DATA", "0") == "1":
+        insert_test_user()
+        create_user("test1", "123", "user")
+
     app.run(debug=True)

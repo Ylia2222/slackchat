@@ -125,7 +125,7 @@
                 <span class="muted"> — {{ r.author_name or '(автор удалён)' }}, {{ r.created_at }}</span>
 
                 <!-- КНОПКА УДАЛЕНИЯ — добавить эту форму -->
-                {% if not r.deleted_at and (r.author_id == current_user().id or channel.owner_id == current_user().id or is_admin()) %}
+                {% if not r.deleted_at and (r.author_id == current_user()['id'] or channel.owner_id == current_user()['id'] or is_admin()) %}
                 <form method="post" action="{{ url_for('message_delete', channel_id=channel.id, message_id=r.id) }}" style="display: inline;" onsubmit="return confirm('Удалить этот ответ?');">
                     <button type="submit" class="btn btn-small">Удалить</button>
                 </form>

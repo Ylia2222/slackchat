@@ -6,6 +6,8 @@ from datetime import datetime
 
 from db import get_conn
 
+import os
+
 def create_user(username, password, role):
     """
     Создать пользователя с указанным логином, паролем и ролью.
@@ -32,7 +34,13 @@ def ensure_master():
     ).fetchone()
 
     if row is None:
-        create_user("master", "master", "admin")
+        master_username = os.getenv("MASTER_USERNAME")
+        master_password = os.getenv("MASTER_PASSWORD")
+
+        if not master_username or not master_password:
+            raise RuntimeError("В .env отсутствует MASTER_USERNAME и/или MASTER_PASSWORD")
+
+        create_user(master_username, master_password, "admin")
 
     conn.close()
     

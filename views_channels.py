@@ -547,46 +547,6 @@ def message_delete_view(channel_id: int, message_id: int):
     flash("Сообщение удалено.")
     return redirect(url_for("channel_view", channel_id=channel_id))
 
-def message_delete_view(channel_id: int, message_id: int):
-    if not is_logged_in():
-        return redirect(url_for("login_form", next=request.url))
-
-    user = current_user()
-    conn = get_conn()
-
-    ch = conn.execute(
-        "SELECT id, owner_id FROM channels WHERE id = ?",
-        (channel_id,),
-    ).fetchone()
-
-    if ch is None:
-        conn.close()
-        abort(404)
-
-    msg = conn.execute(
-        "SELECT id, author_id, parent_id FROM messages WHERE id = ? AND channel_id = ?",
-        (message_id, channel_id),
-    ).fetchone()
-
-    if msg is None:
-        conn.close()
-        abort(404)
-
-    # Удалять могут автор, владелец канала или админ
-    if msg["author_id"] != user["id"] and ch["owner_id"] != user["id"] and not is_admin():
-        conn.close()
-        abort(403)
-
-    conn.execute(
-        "UPDATE messages SET deleted_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), content = '' WHERE id = ?",
-        (message_id,),
-    )
-    conn.commit()
-    conn.close()
-
-    flash("Сообщение удалено.")
-    return redirect(url_for("channel_view", channel_id=channel_id))
-
 def reply_create_view(channel_id: int, parent_id: int):
     if not is_logged_in():
         return redirect(url_for("login_form", next=request.url))

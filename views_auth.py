@@ -8,6 +8,8 @@ from auth_utils import is_logged_in, current_user, is_admin, get_registration_op
 
 from db import get_conn
 
+import sqlite3
+
 def login_form_view():
     if is_logged_in():
         return redirect(url_for("home"))
@@ -70,9 +72,9 @@ def register_view():
     conn = get_conn()
     try:
         conn.execute(
-            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'agent')",
-            (username, generate_password_hash(password)),
-        )
+    "INSERT INTO users (username, password, role) VALUES (?, ?, 'user')",
+    (username, generate_password_hash(password)),
+)
         conn.commit()
     except sqlite3.IntegrityError:
         conn.close()
