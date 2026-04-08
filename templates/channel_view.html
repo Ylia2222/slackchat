@@ -86,17 +86,35 @@
     <h3>Треды</h3>
     {% if not thread_starters %}
     <p class="muted">Пока нет тредов.</p>
-    {{thread_starters}}
     {% else %}
     <ul>
         {% for t in thread_starters %}
         <li>
-            <a href="{{ url_for('channel_view', channel_id=channel.id, thread=t.id) }}">{{ t.content[:50] if not t.deleted_at else '[Удалено]' }}{% if t.content|length > 50 and not t.deleted_at %}…{% endif %}</a>
+            <a href="{{ url_for('channel_view', channel_id=channel.id, thread=t.id) }}">{{ t.content[:50] }}{% if t.content|length > 50 %}…{% endif %}</a>
             <span class="muted"> — {{ t.author_name or '(автор удалён)' }}, {{ t.created_at }}</span>
         </li>
         {% endfor %}
     </ul>
     {% endif %}
+
+    <details class="deleted-threads-folder">
+        <summary>
+            <span class="folder-arrow">▸</span>
+            Удалённые
+        </summary>
+        {% if not deleted_thread_starters %}
+        <p class="muted">Удалённых тредов нет.</p>
+        {% else %}
+        <ul>
+            {% for t in deleted_thread_starters %}
+            <li>
+                <a href="{{ url_for('channel_view', channel_id=channel.id, thread=t.id) }}">[Удалено]</a>
+                <span class="muted"> — {{ t.author_name or '(автор удалён)' }}, {{ t.created_at }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </details>
 
     {% if selected_thread %}
     <section class="card" style="margin-top: 16px;">

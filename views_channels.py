@@ -136,7 +136,16 @@ def channel_view_view(channel_id: int):
                u.username AS author_name
         FROM messages m
         LEFT JOIN users u ON m.author_id = u.id
-        WHERE m.channel_id = ? AND m.parent_id IS NULL
+        WHERE m.channel_id = ? AND m.parent_id IS NULL AND m.deleted_at IS NULL
+        ORDER BY m.created_at DESC
+    """, (channel_id,)).fetchall()
+
+    deleted_thread_starters = conn.execute("""
+        SELECT m.id, m.content, m.author_id, m.created_at, m.deleted_at,
+               u.username AS author_name
+        FROM messages m
+        LEFT JOIN users u ON m.author_id = u.id
+        WHERE m.channel_id = ? AND m.parent_id IS NULL AND m.deleted_at IS NOT NULL
         ORDER BY m.created_at DESC
     """, (channel_id,)).fetchall()
 
@@ -213,6 +222,7 @@ def channel_view_view(channel_id: int):
         invite_candidates=invite_candidates,
         can_post=can_post,
         thread_starters=thread_starters,
+        deleted_thread_starters=deleted_thread_starters,
         can_delete_thread=can_delete_thread,
         selected_thread=selected_thread, 
         thread_replies=thread_replies

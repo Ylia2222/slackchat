@@ -89,6 +89,8 @@ h1 {
     box-shadow: 0 4px 12px rgba(139, 30, 63, 0.2);
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .btn:hover {
@@ -258,6 +260,33 @@ ul li:hover {
     border-color: var(--burgundy-light);
     transform: translateX(4px);
     box-shadow: 0 4px 12px rgba(139, 30, 63, 0.1);
+}
+
+.deleted-threads-folder {
+    margin-top: 12px;
+}
+
+.deleted-threads-folder summary {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-burgundy);
+    font-weight: 600;
+    user-select: none;
+}
+
+.deleted-threads-folder summary::-webkit-details-marker {
+    display: none;
+}
+
+.folder-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.deleted-threads-folder[open] .folder-arrow {
+    transform: rotate(90deg);
 }
 
 a {
